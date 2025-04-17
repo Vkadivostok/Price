@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Данные из Google Таблицы</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    th { background-color: #007BFF; color: white; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Данные из Google Таблицы</h1>
+  <div id="data-container">Загрузка...</div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbc-wDpCVN765Z3iKf6OEgl6vHVI8nx-QWkuGDjB9HZsNv2kSp_WSDqaw5sf667CvQ/exec';
+
+    async function loadData() {
+      try {
+        // Добавляем случайный параметр для избежания кэширования
+        const url = `${SCRIPT_URL}?t=${Date.now()}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+        
+        const data = await response.json();
+        renderTable(data);
+        
+      } catch (error) {
+        document.getElementById('data-container').innerHTML = 
+          `<p class="error">Ошибка: ${error.message}</p>`;
+        console.error('Ошибка загрузки:', error);
+      }
+    }
+
+    function renderTable(data) {
+      if (!data || !data.length) {
+        document.getElementById('data-container').innerHTML = 
+          "<p>Нет данных для отображения</p>";
+        return;
+      }
+
+      let html = '<table><tr>';
+      // Заголовки
+      data[0].forEach(col => html += `<th>${col}</th>`);
+      html += '</tr>';
+      
+      // Данные
+      for (let i = 1; i < data.length; i++) {
+        html += '<tr>';
+        data[i].forEach(cell => html += `<td>${cell || ''}</td>`);
+        html += '</tr>';
+      }
+      
+      html += '</table>';
+      document.getElementById('data-container').innerHTML = html;
+    }
+
+    // Загрузка данных при старте
+    window.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>
